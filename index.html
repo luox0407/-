@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>水蘊草 AR 觀察</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f8f2;
+    }
+
+    #message {
+      position: fixed;
+      z-index: 10;
+      top: 12px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: white;
+      background: rgba(0, 80, 40, 0.75);
+      padding: 12px 0;
+      font-size: 16px;
+    }
+
+    #startButton {
+      position: fixed;
+      z-index: 20;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 16px 28px;
+      border: none;
+      border-radius: 12px;
+      background: #25834b;
+      color: white;
+      font-size: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="message">
+    🌿 水蘊草 AR 觀察：請掃描水蘊草圖片
+  </div>
+
+  <button id="startButton">開始 AR 觀察</button>
+
+  <a-scene
+    mindar-image="
+      imageTargetSrc: ./assets/targets.mind;
+      autoStart: false;
+      uiLoading: no;
+      uiScanning: yes;
+      uiError: yes;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    embedded
+    >
+
+    <a-assets>
+      <a-asset-item
+        id="waterweedModel"
+        src="./assets/waterweed.glb">
+      </a-asset-item>
+    </a-assets>
+
+    <a-camera
+      position="0 0 0"
+      look-controls="enabled: false">
+    </a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0">
+
+      <a-gltf-model
+        src="#waterweedModel"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="0.2 0.2 0.2">
+      </a-gltf-model>
+
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    const sceneEl = document.querySelector("a-scene");
+    const startButton = document.querySelector("#startButton");
+    const message = document.querySelector("#message");
+
+    startButton.addEventListener("click", async () => {
+      try {
+        const arSystem = sceneEl.systems["mindar-image-system"];
+
+        await arSystem.start();
+
+        startButton.style.display = "none";
+        message.textContent = "請將鏡頭對準水蘊草辨識圖片 🌿";
+
+      } catch (error) {
+        console.error(error);
+        message.textContent =
+          "無法開啟鏡頭，請確認相機權限及網頁網址。";
+      }
+    });
+
+    sceneEl.addEventListener("targetFound", () => {
+      message.textContent = "成功辨識！水蘊草出現了 🌱";
+    });
+
+    sceneEl.addEventListener("targetLost", () => {
+      message.textContent = "請重新對準水蘊草圖片";
+    });
+  </script>
+
+</body>
+</html>
